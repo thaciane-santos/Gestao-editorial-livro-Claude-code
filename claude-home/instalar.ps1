@@ -3,10 +3,15 @@
 $ErrorActionPreference = "Stop"
 $aqui = Split-Path -Parent $MyInvocation.MyCommand.Path
 $dest = Join-Path $env:USERPROFILE ".claude"
-New-Item -ItemType Directory -Force -Path "$dest\skills\aprender-feedback","$dest\aprendizados" | Out-Null
+New-Item -ItemType Directory -Force -Path "$dest\aprendizados" | Out-Null
 $utf8 = New-Object System.Text.UTF8Encoding($false)
-$skill = [IO.File]::ReadAllText("$aqui\skills\aprender-feedback\SKILL.md",$utf8).Replace("__HOME__",$dest)
-[IO.File]::WriteAllText("$dest\skills\aprender-feedback\SKILL.md",$skill,$utf8)
+Get-ChildItem "$aqui\skills" -Directory | ForEach-Object {
+  $nome = $_.Name
+  New-Item -ItemType Directory -Force -Path "$dest\skills\$nome" | Out-Null
+  $skill = [IO.File]::ReadAllText("$($_.FullName)\SKILL.md",$utf8).Replace("__HOME__",$dest)
+  [IO.File]::WriteAllText("$dest\skills\$nome\SKILL.md",$skill,$utf8)
+  Write-Host "Skill instalada: $nome"
+}
 Get-ChildItem "$aqui\aprendizados" -Recurse -File | ForEach-Object {
   $rel = $_.FullName.Substring("$aqui\aprendizados".Length)
   $alvo = Join-Path "$dest\aprendizados" $rel
